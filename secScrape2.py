@@ -51,14 +51,6 @@ for item in decoded_content['directory']['item']:
             file_url = make_url(base_url, ['2019', item['name'], file['name']])
             filelist.append(file_url)
 
-
-
-
-
-
-
-
-
 # file_url = r"https://www.sec.gov/Archives/edgar/daily-index/2019/QTR2/master.20190401.idx"
 
 for file_url in filelist[:31]:
@@ -93,17 +85,9 @@ for file_url in filelist[:31]:
 
     master_data = []
 
-# print(data_format[]))
     # now we need to break the data into sections, this way we can move to the final step of getting each row value.
     for index, item in enumerate(data_format):
-# #         print("item is", item)
-# #         # if it's the first index, it won't be even so treat it differently
-# #         # if index == 0:
-# #         #     clean_item_data = item.replace('\n','|').split('|')
-# #         #     clean_item_data = clean_item_data[8:]
-# #         # else:
         clean_item_data = item.replace('\n','|').split('|')
-# print(clean_item_data)
             
         for index, row in enumerate(clean_item_data):
             
