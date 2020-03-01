@@ -2,6 +2,7 @@ import requests
 import urllib
 from bs4 import BeautifulSoup
 
+#make url
 def make_url(base_url, comp):
 
     url = base_url
