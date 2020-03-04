@@ -53,8 +53,10 @@ with open('S&PcompaniesCIK.txt') as f:
         data = line.split()
         snp.append(data[0])
 
+
+unique_names = []
+
 for file_url in filelist:
-    # print(file_url)
     content = requests.get(file_url).content
 
     with open('master_20190401.txt', 'wb') as f:
@@ -117,15 +119,18 @@ for file_url in filelist:
                 comp_name = document_dict['company_name']
                 docu_url = document_dict['file_url']
                 
-                print('-'*100)
-                print(comp_name)
-                print(docu_url)
+                # print('-'*100)
+                # print(comp_name)
+                # print(docu_url)
 
                 # Create a url that will take us to the archive folder
-                archive_url = docu_url.replace('.txt','').replace('-','')
+                archive_url = docu_url.replace('.txt','/index.json').replace('-','')
 
-                print('-'*100)
-                print('     The Archive Folder can be found here: {}'.format(archive_url))
+                # print('-'*100)
+                # print('     The Archive Folder can be found here: {}'.format(archive_url))
+
+                # normal_url = normal_url.replace('-','').replace('.txt','/index.json')
+
 
                 # # Create a url that takes us to the Detail filing landing page
                 # file_url_adj = docu_url.split('.txt')
@@ -142,4 +147,94 @@ for file_url in filelist:
                 # print('-'*100)
                 # print('     The Company Archive Folder can be found here: {}'.format(company_url[0]))
 
-print("total count of companies is", count)
+# print("total count of companies is", count)
+
+
+                base_url = r"https://www.sec.gov"
+
+                # request the url and decode it.
+                content = requests.get(archive_url).json()
+
+                for file in content['directory']['item']:
+                    
+                    # Grab the filing summary and create a new url leading to the file so we can download it.
+                    if file['name'] == 'FilingSummary.xml':
+
+                        xml_summary = base_url + content['directory']['name'] + "/" + file['name']
+                        
+                        # print('-' * 100)
+                        # print('File Name: ' + file['name'])
+                        # print('File Path: ' + xml_summary)
+
+                # define a new base url that represents the filing folder. This will come in handy when we need to download the reports.
+                base_url = xml_summary.replace('FilingSummary.xml', '')
+
+                # request and parse the content
+                content = requests.get(xml_summary).content
+                soup = BeautifulSoup(content, 'lxml')
+
+                # print(soup)
+
+                # find the 'myreports' tag because this contains all the individual reports submitted.
+                reports = soup.find('myreports')
+                # print(reports)
+
+                # I want a list to store all the individual components of the report, so create the master list.
+                master_reports = []
+
+                # loop through each report in the 'myreports' tag but avoid the last one as this will cause an error.
+                for report in reports.find_all('report')[:-1]:
+
+                    # let's create a dictionary to store all the different parts we need.
+                    report_dict = {}
+                    report_dict['name_short'] = report.shortname.text
+                    report_dict['name_long'] = report.longname.text
+                    report_dict['position'] = report.position.text
+                    report_dict['category'] = report.menucategory.text
+                    report_dict['url'] = base_url + report.htmlfilename.text
+
+                    # append the dictionary to the master list.
+                    master_reports.append(report_dict)
+
+                    # print the info to the user.
+                    # print('-'*100)
+                    # print(base_url + report.htmlfilename.text)
+                    # print(report.longname.text)
+                    # print(report.shortname.text)
+                    # print(report.menucategory.text)
+                    # print(report.position.text)
+
+                # create the list to hold the statement urls
+                statements_url = []
+
+                for report_dict in master_reports:
+                    
+                #     # define the statements we want to look for.
+                #     item1 = r"Consolidated Balance Sheets"
+                #     item2 = r"Consolidated Statements of Operations and Comprehensive Income (Loss)"
+                #     item3 = r"Consolidated Statements of Cash Flows"
+                #     item4 = r"Consolidated Statements of Stockholder's (Deficit) Equity"
+                    
+                #     # store them in a list.
+                #     report_list = [item1, item2, item3, item4]
+                    
+                    # if the short name can be found in the report list.
+                    if report_dict['position'] == '2':
+                        
+                        # print some info and store it in the statements url.
+                        print('-'*100)
+                        print(report_dict['name_short'])
+                        print(report_dict['url'])
+                        
+                #     #     statements_url.append(report_dict['url'])
+                #     if int(report_dict['position']) < 5:
+                #         if report_dict['name_short'] not in unique_names:
+                #             unique_names.append(report_dict['name_short'])
+                            
+                # print(unique_names)
+
+# count = 0
+# for i in range(1, len(unique_names)):
+#     if "Balance Sheet".lower() in unique_names[i].lower():
+#         count = count + 1
+# print("Count is", count)
