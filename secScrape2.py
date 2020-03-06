@@ -45,6 +45,7 @@ for item in decoded_content['directory']['item']:
 # file_url = r"https://www.sec.gov/Archives/edgar/daily-index/2019/QTR2/master.20190401.idx"
 
 balanceSheetCount = 0
+ISCount = 0
 
 # make list of s&p 500 companies
 snp = []
@@ -184,6 +185,7 @@ for file_url in filelist:
 
                 # store where the balance sheet position
                 bs_location = 0
+                is_location = 0
 
                 # loop through each report in the 'myreports' tag but avoid the last one as this will cause an error.
                 for report in reports.find_all('report')[:10]:
@@ -206,8 +208,30 @@ for file_url in filelist:
                                             'BorgWarner Inc. and Consolidated Subsidiaries Consolidated Balance Sheets'.lower(), \
                                                 'MAALP Consolidated Balance Sheets'.lower(), 'consolidated statements of condition', 'consolidated statement of condition']
 
-                    if report.shortname.text.lower() in bs_titles_list:
-                        bs_location = report.position.text
+                    is_titles_list = ['consolidated statements of income', 'consolidated statement of income', 'consolidated statements of operations', 'consolidated statement of operations', \
+                        'consolidated statements of income (loss)', 'consolidated statement of income (loss)', 'consolidated income statement', 'consolidated income statements', \
+                            'consolidated statements of earnings', 'consolidated statement of earnings', 'statement of consolidated income', 'statements of consolidated income', \
+                                'consolidated statements of operations and comprehensive income', 'consolidated statement of operations and comprehensive income', \
+                                    'consolidated statements of operations and comprehensive income (loss)', 'consolidated statement of operations and comprehensive income (loss)', \
+                                        'consolidated statements of earnings and comprehensive income', 'statements of consolidated earnings', \
+                                            'condensed consolidated statements of operations and comprehensive income (loss)', 'condensed consolidated statement of operations and comprehensive income (loss)', \
+                                                'consolidated statements of operations statement', 'consolidated results of operations', 'consolidated condensed statements of income', \
+                                                    'consolidated statements of operations consolidated statements of operations', 'consolidated statements of operations consolidated statement of operations', 'consolidated statements of income and comprehensive income', 'consolidated statement of income and comprehensive income', \
+                                                        'income statments', 'income statment', 'combined and consolidated statements of earnings', 'condensed consolidated statements of operations', \
+                                                            'statement of consolidated operations', 'consolidated statements of income statement', 'consolidated and combined statements of earnings', \
+                                                                'statements of consolidated operations', 'consolidated statements of earnings, comprehensive income and retained earnings', \
+                                                                    'statements of operations', 'statement of earnings (loss)', 'Carnival Corporation & PLC Consolidated Statements of Income'.lower(), \
+                                                                        'CONDENSED CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME (LOSS)'.lower(), 'statement of income', \
+                                                                            'Consolidated and Combined Statements of Income (Loss)'.lower(), 'BorgWarner Inc. and Consolidated Subsidiaries Consolidated Statements of Operations'.lower(), \
+                                                                                'statements of consolidated income (loss)', 'consolidated statements of income/(loss)', 'consolidated statement of income statement', \
+                                                                                    'statements of income']
+
+                    # if report.shortname.text.lower() in bs_titles_list:
+                    #     bs_location = report.position.text
+
+                    if report.shortname.text.lower() in is_titles_list:
+                        is_location = report.position.text
+                    # else if 
 
                     # append the dictionary to the master list.
                     master_reports.append(report_dict)
@@ -223,9 +247,13 @@ for file_url in filelist:
                     # if report.shortname.text.lower() == 'consolidated balance sheets' or report.shortname.text.lower() == 'consolidated balance sheet':
                     #     count += 1
 
-                if bs_location == 0:
-                    balanceSheetCount += 1
-                    print(document_dict['company_name'], master_reports, bs_location)
+                # if bs_location == 0:
+                #     balanceSheetCount += 1
+                #     print(document_dict['company_name'], master_reports, bs_location)
+
+                if is_location == 0:
+                    ISCount += 1
+                    print(document_dict['company_name'], master_reports, is_location)
                 # # create the list to hold the statement urls
                 # statements_url = []
 
@@ -255,8 +283,9 @@ for file_url in filelist:
                             
                 # # print(unique_names)
 
-print('count is', balanceSheetCount)
- 
+print('number of balance sheets unacounted for is', balanceSheetCount)
+print('number of income statements unacounted for is', ISCount)
+
 # count = 0
 # for i in range(1, len(unique_names)):
 #     if "Balance Sheet".lower() in unique_names[i].lower():
