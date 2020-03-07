@@ -1,0 +1,38 @@
+body{
+  font-family: sans-serif;
+}
+
+header{
+  min-height: 15vh;
+  background-color: #0b53e4;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+  margin: 0px;
+}
+
+nav{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #385d80;
+  min-height: 7vh;
+  font-size: 2em;
+  flex-flow:
+  margin: 0px;
+}
+
+a{
+  margin: 20px;
+}
+
+.text-container{
+  display: flex;
+  justify-content: center;
+}
+.graph-container{
+  display: flex;
+  justify-content: center;
+}
