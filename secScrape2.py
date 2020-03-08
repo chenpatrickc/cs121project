@@ -46,6 +46,7 @@ for item in decoded_content['directory']['item']:
 
 balanceSheetCount = 0
 ISCount = 0
+CISCount = 0
 CFCount = 0
 
 # make list of s&p 500 companies
@@ -189,8 +190,9 @@ for file_url in filelist:
                 is_location = 0
                 cf_location = 0
                 cis_location = 0
+
                 # loop through each report in the 'myreports' tag but avoid the last one as this will cause an error.
-                for report in reports.find_all('report')[:10]:
+                for report in reports.find_all('report')[:11]:
 
                     # let's create a dictionary to store all the different parts we need.
                     report_dict = {}
@@ -227,13 +229,19 @@ for file_url in filelist:
                                                                             'Consolidated and Combined Statements of Income (Loss)'.lower(), 'BorgWarner Inc. and Consolidated Subsidiaries Consolidated Statements of Operations'.lower(), \
                                                                                 'statements of consolidated income (loss)', 'consolidated statements of income/(loss)', 'consolidated statement of income statement', \
                                                                                     'statements of income']
-                    cis_titles_list = ['consolidated statements of comprehensive income', 'consolidated statement of comprehensive income']
+                    cis_titles_list = ['consolidated statements of comprehensive income', 'consolidated statement of comprehensive income', 'consolidated comprehensive statements of earnings', 'Consolidated Statements Of Comprehensive Income (Loss)'.lower(), \
+                        'Consolidated Statements of Comprehensive Loss'.lower(), 'COMPREHENSIVE INCOME STATEMENTS'.lower()]
 
                     cf_titles_list = ['Consolidated Statements of Cash Flows', 'CONSOLIDATED STATEMENTS OF CASH FLOWS', 'CONSOLIDATED STATEMENT OF CASH FLOWS', 'Consolidated Cash Flow Statement', 'Carnival Corporation & PLC Consolidated Statements of Cash Flows', \
                      'Consolidated Statement of Cash Flows', 'Consolidated Statements Of Cash Flows', 'CONSOLIDATED CASH FLOW STATEMENTS', 'Statement of Cash Flows', 'CONDENSED CONSOLIDATED STATEMENTS OF CASH FLOWS', 'Consolidated Condensed Statements of Cash Flows', 'Consolidated Statements of Cash Flow', \
                         'Consolidated Statement of Cash Flow', 'Consolidated and Combined Statements of Cash Flows', 'BorgWarner Inc. and Consolidated Subsidiaries Consolidated Statements of Cash Flows', 'Statements Of Consolidated Cash Flows', 'Consolidated Statement Of Cash Flows', \
                             'STATEMENTS OF CONSOLIDATED CASH FLOWS', 'CONSOLIDATED STATEMENTS OF CASH FLOW', 'Statement of Consolidated Cash Flows', 'Statements of Consolidated Cash Flows', 'STATEMENT OF CASH FLOWS', 'Consolidated Cash Flow Statements', 'Statements Of Cash Flows', 'Statements of Cash Flows', 'STATEMENT OF CONSOLIDATED CASH FLOWS', \
                                 'Condensed Consolidated Statements of Cash Flows', 'CASH FLOWS STATEMENTS', 'CONSOLIDATED CASH FLOWS', 'CONSOLIDATED CASH FLOWS STATEMENTS']
+                    
+                    for i in range(1, len(cf_titles_list)):
+                        cf_titles_list[i] = cf_titles_list[i].lower()
+
+                    
                     # if report.shortname.text.lower() in bs_titles_list:
                     #     bs_location = report.position.text
 
@@ -261,9 +269,13 @@ for file_url in filelist:
                 #     balanceSheetCount += 1
                 #     print(document_dict['company_name'], master_reports, bs_location)
 
-                # if is_location == 0:
-                #     ISCount += 1
-                #     print(document_dict['company_name'], master_reports, is_location)
+                if is_location == 0:
+                    ISCount += 1
+                    # print(document_dict['company_name'], master_reports, is_location)
+
+                if is_location == 0 and cis_location == 0:
+                    CISCount += 1
+                    # print(document_dict['company_name'], master_reports, cis_location)
 
                 if cf_location == 0:
                     CFCount += 1
@@ -291,7 +303,8 @@ for file_url in filelist:
 
 print('number of balance sheets unacounted for is', balanceSheetCount)
 print('number of income statements unacounted for is', ISCount)
-print('number of income statements unacounted for is', CFCount)
+print('number of comprehensive income statements unacounted for is', CISCount)
+print('number of cash flows unacounted for is', CFCount)
 
 # count = 0
 # cis_titles = []
