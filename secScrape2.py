@@ -253,11 +253,20 @@ for file_url in filelist:
                 if is_location == 0:
                     ISCount += 1
                     print(document_dict['company_name'], master_reports, is_location)
+<<<<<<< Updated upstream
                 # # create the list to hold the statement urls
                 statements_url = []
 
                 for report_dict in master_reports:
 
+=======
+                
+                # create the list to hold the statement urls
+                statements_url = []
+
+                for report_dict in master_reports:
+                    
+>>>>>>> Stashed changes
                 # #     # if the short name can be found in the report list.
                 #     if report_dict['name_short'].lower() == 'consolidated balance sheets':
 
@@ -265,12 +274,20 @@ for file_url in filelist:
                 #         print('-'*100)
                 #         print(report_dict['name_short'])
                 #         print(report_dict['url'])
+<<<<<<< Updated upstream
 
                      #statements_url.append(report_dict['url'])
                      #if int(report_dict['position']) < 5:
                      if report_dict['name_short'] not in unique_names:
                          unique_names.append(report_dict['name_short'])
 
+=======
+                        
+                    #     statements_url.append(report_dict['url'])
+                    if report_dict['name_short'] not in unique_names:
+                        unique_names.append(report_dict['name_short'])
+                        
+>>>>>>> Stashed changes
                 # # print(unique_names)
 
 print('number of balance sheets unacounted for is', balanceSheetCount)
