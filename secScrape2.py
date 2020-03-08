@@ -244,7 +244,7 @@ for file_url in filelist:
                         cis_location =  report.position.text
 
                     if report.shortname.text.lower() in cf_titles_list:
-                        cif_location = report.position.text
+                        cf_location = report.position.text
 
                     # append the dictionary to the master list.
                     master_reports.append(report_dict)
