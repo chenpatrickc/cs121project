@@ -83,21 +83,21 @@ for file_url in filelist:
     # now we need to break the data into sections, this way we can move to the final step of getting each row value.
     for index, item in enumerate(data_format):
         clean_item_data = item.replace('\n','|').split('|')
-            
+
         for index, row in enumerate(clean_item_data):
-            
+
             # when you find the text file.
             if '.txt' in row:
                 # grab the values that belong to that row. It's 4 values before and one after.
                 mini_list = clean_item_data[(index - 4): index + 1]
-                
+
                 if len(mini_list) != 0:
                     mini_list[4] = "https://www.sec.gov/Archives/" + mini_list[4]
                     master_data.append(mini_list)
-                    
+
     # loop through each document in the master list.
     for index, document in enumerate(master_data):
-        
+
         # create a dictionary for each document in the master list
         document_dict = {}
         document_dict['cik_number'] = document[0]
@@ -105,7 +105,7 @@ for file_url in filelist:
         document_dict['form_id'] = document[2]
         document_dict['date'] = document[3]
         document_dict['file_url'] = document[4]
-        
+
         master_data[index] = document_dict
 
 
@@ -119,7 +119,7 @@ for file_url in filelist:
                 # get the components
                 comp_name = document_dict['company_name']
                 docu_url = document_dict['file_url']
-                
+
                 # print('-'*100)
                 # print(comp_name)
                 # print(docu_url)
@@ -157,12 +157,12 @@ for file_url in filelist:
                 content = requests.get(archive_url).json()
 
                 for file in content['directory']['item']:
-                    
+
                     # Grab the filing summary and create a new url leading to the file so we can download it.
                     if file['name'] == 'FilingSummary.xml':
 
                         xml_summary = base_url + content['directory']['name'] + "/" + file['name']
-                        
+
                         # print('-' * 100)
                         # print('File Name: ' + file['name'])
                         # print('File Path: ' + xml_summary)
@@ -186,7 +186,8 @@ for file_url in filelist:
                 # store where the balance sheet position
                 bs_location = 0
                 is_location = 0
-
+                cf_position = 0
+                cis_location = 0
                 # loop through each report in the 'myreports' tag but avoid the last one as this will cause an error.
                 for report in reports.find_all('report')[:10]:
 
@@ -225,14 +226,15 @@ for file_url in filelist:
                                                                             'Consolidated and Combined Statements of Income (Loss)'.lower(), 'BorgWarner Inc. and Consolidated Subsidiaries Consolidated Statements of Operations'.lower(), \
                                                                                 'statements of consolidated income (loss)', 'consolidated statements of income/(loss)', 'consolidated statement of income statement', \
                                                                                     'statements of income']
-
+                    cis_titles_list = ['consolidated statements of comprehensive income']
                     # if report.shortname.text.lower() in bs_titles_list:
                     #     bs_location = report.position.text
 
                     if report.shortname.text.lower() in is_titles_list:
                         is_location = report.position.text
-                    # else if 
-
+                    # else if
+                    if report.shortname.text.lower() in cis_titles_list:
+                        cis_location =  report.position.text
                     # append the dictionary to the master list.
                     master_reports.append(report_dict)
 
@@ -244,9 +246,6 @@ for file_url in filelist:
                     # print(report.menucategory.text)
                     # print(report.position.text)
 
-                    # if report.shortname.text.lower() == 'consolidated balance sheets' or report.shortname.text.lower() == 'consolidated balance sheet':
-                    #     count += 1
-
                 # if bs_location == 0:
                 #     balanceSheetCount += 1
                 #     print(document_dict['company_name'], master_reports, bs_location)
@@ -255,39 +254,33 @@ for file_url in filelist:
                     ISCount += 1
                     print(document_dict['company_name'], master_reports, is_location)
                 # # create the list to hold the statement urls
-                # statements_url = []
+                statements_url = []
 
-                # for report_dict in master_reports:
-                    
-                # #     # define the statements we want to look for.
-                # #     item1 = r"Consolidated Balance Sheets"
-                # #     item2 = r"Consolidated Statements of Operations and Comprehensive Income (Loss)"
-                # #     item3 = r"Consolidated Statements of Cash Flows"
-                # #     item4 = r"Consolidated Statements of Stockholder's (Deficit) Equity"
-                    
-                # #     # store them in a list.
-                # #     report_list = [item1, item2, item3, item4]
-                    
+                for report_dict in master_reports:
+
                 # #     # if the short name can be found in the report list.
                 #     if report_dict['name_short'].lower() == 'consolidated balance sheets':
-                        
+
                 #         # print some info and store it in the statements url.
                 #         print('-'*100)
                 #         print(report_dict['name_short'])
                 #         print(report_dict['url'])
-                        
-                #     #     statements_url.append(report_dict['url'])
-                #     if int(report_dict['position']) < 5:
-                #         if report_dict['name_short'] not in unique_names:
-                #             unique_names.append(report_dict['name_short'])
-                            
+
+                     #statements_url.append(report_dict['url'])
+                     #if int(report_dict['position']) < 5:
+                     if report_dict['name_short'] not in unique_names:
+                         unique_names.append(report_dict['name_short'])
+
                 # # print(unique_names)
 
 print('number of balance sheets unacounted for is', balanceSheetCount)
 print('number of income statements unacounted for is', ISCount)
 
-# count = 0
-# for i in range(1, len(unique_names)):
-#     if "Balance Sheet".lower() in unique_names[i].lower():
-#         count = count + 1
+
+count = 0
+cf_titles = []
+for i in range(1, len(unique_names)):
+    if "Cash Flow".lower() in unique_names[i].lower():
+        count = count + 1
+        cf_titles.append(unique_names[i])
 # print("Count is", count)
