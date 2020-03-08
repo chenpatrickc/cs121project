@@ -46,6 +46,7 @@ for item in decoded_content['directory']['item']:
 
 balanceSheetCount = 0
 ISCount = 0
+CFCount = 0
 
 # make list of s&p 500 companies
 snp = []
@@ -226,7 +227,13 @@ for file_url in filelist:
                                                                             'Consolidated and Combined Statements of Income (Loss)'.lower(), 'BorgWarner Inc. and Consolidated Subsidiaries Consolidated Statements of Operations'.lower(), \
                                                                                 'statements of consolidated income (loss)', 'consolidated statements of income/(loss)', 'consolidated statement of income statement', \
                                                                                     'statements of income']
-                    cis_titles_list = ['consolidated statements of comprehensive income']
+                    cis_titles_list = ['consolidated statements of comprehensive income', 'consolidated statement of comprehensive income'']
+
+                    cf_titles_list = ['Consolidated Statements of Cash Flows', 'CONSOLIDATED STATEMENTS OF CASH FLOWS', 'CONSOLIDATED STATEMENT OF CASH FLOWS', 'Consolidated Cash Flow Statement', 'Carnival Corporation & PLC Consolidated Statements of Cash Flows', \
+                     'Consolidated Statement of Cash Flows', 'Consolidated Statements Of Cash Flows', 'CONSOLIDATED CASH FLOW STATEMENTS', 'Statement of Cash Flows', 'CONDENSED CONSOLIDATED STATEMENTS OF CASH FLOWS', 'Consolidated Condensed Statements of Cash Flows', 'Consolidated Statements of Cash Flow', \
+                        'Consolidated Statement of Cash Flow', 'Consolidated and Combined Statements of Cash Flows', 'BorgWarner Inc. and Consolidated Subsidiaries Consolidated Statements of Cash Flows', 'Statements Of Consolidated Cash Flows', 'Consolidated Statement Of Cash Flows', \
+                            'STATEMENTS OF CONSOLIDATED CASH FLOWS', 'CONSOLIDATED STATEMENTS OF CASH FLOW', 'Statement of Consolidated Cash Flows', 'Statements of Consolidated Cash Flows', 'STATEMENT OF CASH FLOWS', 'Consolidated Cash Flow Statements', 'Statements Of Cash Flows', 'Statements of Cash Flows', 'STATEMENT OF CONSOLIDATED CASH FLOWS', \
+                                'Condensed Consolidated Statements of Cash Flows', 'CASH FLOWS STATEMENTS', 'CONSOLIDATED CASH FLOWS', 'CONSOLIDATED CASH FLOWS STATEMENTS']
                     # if report.shortname.text.lower() in bs_titles_list:
                     #     bs_location = report.position.text
 
@@ -235,6 +242,10 @@ for file_url in filelist:
                     # else if
                     if report.shortname.text.lower() in cis_titles_list:
                         cis_location =  report.position.text
+
+                    if report.shortname.text.lower() in cf_titles_list:
+                        cif_location = report.position.text
+
                     # append the dictionary to the master list.
                     master_reports.append(report_dict)
 
@@ -250,9 +261,13 @@ for file_url in filelist:
                 #     balanceSheetCount += 1
                 #     print(document_dict['company_name'], master_reports, bs_location)
 
-                if is_location == 0:
-                    ISCount += 1
-                    print(document_dict['company_name'], master_reports, is_location)
+                # if is_location == 0:
+                #     ISCount += 1
+                #     print(document_dict['company_name'], master_reports, is_location)
+
+                if cf_location == 0:
+                    CFCount += 1
+                    print(document_dict['company_name'], master_reports, cf_location)
                 
                 # create the list to hold the statement urls
                 statements_url = []
@@ -261,6 +276,7 @@ for file_url in filelist:
 
                 # #     # if the short name can be found in the report list.
                 #     if report_dict['name_short'].lower() == 'consolidated balance sheets':
+                #fasfasdf
 
                 #         # print some info and store it in the statements url.
                 #         print('-'*100)
@@ -268,7 +284,6 @@ for file_url in filelist:
                 #         print(report_dict['url'])
 
                      #statements_url.append(report_dict['url'])
-                     #if int(report_dict['position']) < 5:
                      if report_dict['name_short'] not in unique_names:
                          unique_names.append(report_dict['name_short'])
 
@@ -276,12 +291,13 @@ for file_url in filelist:
 
 print('number of balance sheets unacounted for is', balanceSheetCount)
 print('number of income statements unacounted for is', ISCount)
+print('number of income statements unacounted for is', CFCount)
 
-
-count = 0
-cf_titles = []
-for i in range(1, len(unique_names)):
-    if "Cash Flow".lower() in unique_names[i].lower():
-        count = count + 1
-        cf_titles.append(unique_names[i])
+# count = 0
+# cis_titles = []
+# for i in range(1, len(unique_names)):
+#     if "comprehensive income".lower() in unique_names[i].lower():
+#         count = count + 1
+#         cis_titles.append(unique_names[i])
 # print("Count is", count)
+# print("titles are", cis_titles)
