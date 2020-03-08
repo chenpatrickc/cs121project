@@ -227,7 +227,7 @@ for file_url in filelist:
                                                                             'Consolidated and Combined Statements of Income (Loss)'.lower(), 'BorgWarner Inc. and Consolidated Subsidiaries Consolidated Statements of Operations'.lower(), \
                                                                                 'statements of consolidated income (loss)', 'consolidated statements of income/(loss)', 'consolidated statement of income statement', \
                                                                                     'statements of income']
-                    cis_titles_list = ['consolidated statements of comprehensive income', 'consolidated statement of comprehensive income'']
+                    cis_titles_list = ['consolidated statements of comprehensive income', 'consolidated statement of comprehensive income']
 
                     cf_titles_list = ['Consolidated Statements of Cash Flows', 'CONSOLIDATED STATEMENTS OF CASH FLOWS', 'CONSOLIDATED STATEMENT OF CASH FLOWS', 'Consolidated Cash Flow Statement', 'Carnival Corporation & PLC Consolidated Statements of Cash Flows', \
                      'Consolidated Statement of Cash Flows', 'Consolidated Statements Of Cash Flows', 'CONSOLIDATED CASH FLOW STATEMENTS', 'Statement of Cash Flows', 'CONDENSED CONSOLIDATED STATEMENTS OF CASH FLOWS', 'Consolidated Condensed Statements of Cash Flows', 'Consolidated Statements of Cash Flow', \
