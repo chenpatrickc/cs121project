@@ -187,7 +187,7 @@ for file_url in filelist:
                 # store where the balance sheet position
                 bs_location = 0
                 is_location = 0
-                cf_position = 0
+                cf_location = 0
                 cis_location = 0
                 # loop through each report in the 'myreports' tag but avoid the last one as this will cause an error.
                 for report in reports.find_all('report')[:10]:
