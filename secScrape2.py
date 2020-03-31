@@ -1,5 +1,6 @@
 import requests
 import urllib
+import pandas as pd
 from bs4 import BeautifulSoup
 
 def make_url(base_url, comp):
@@ -12,21 +13,25 @@ def make_url(base_url, comp):
 
     return url
 
-# base url for the daily index files
+
+# base url for the daily index files.
+# daily index stores all documents listed on a day by day basis
 base_url = r"https://www.sec.gov/Archives/edgar/daily-index"
 
-year = 2019
 
 # create the daily index url for 2019
+# we are appending the index.json into url to return webpage in json format
+year = 2019
 year_url = make_url(base_url, [year, 'index.json'])
 
 # request the 2019 url
 content = requests.get(year_url)
 decoded_content = content.json()
 
+# create an empty list to store urls for each daily index file
 filelist = []
 
-#loop through the dictionary
+#loop through the dictionary created, which contains the four quaters of the year, and pull
 for item in decoded_content['directory']['item']:
 
     #create the qtr url
@@ -38,16 +43,17 @@ for item in decoded_content['directory']['item']:
 
     for file in decoded_content['directory']['item']:
 
+        #only take the master files
         if file['name'][0] == 'm':
             file_url = make_url(base_url, ['2019', item['name'], file['name']])
             filelist.append(file_url)
 
-# file_url = r"https://www.sec.gov/Archives/edgar/daily-index/2019/QTR2/master.20190401.idx"
 
 balanceSheetCount = 0
 ISCount = 0
 CISCount = 0
 CFCount = 0
+count = 0
 
 # make list of s&p 500 companies
 snp = []
@@ -59,6 +65,7 @@ with open('S&PcompaniesCIK.txt') as f:
 
 unique_names = []
 
+#for each master file that we pulled from the daily index
 for file_url in filelist:
     content = requests.get(file_url).content
 
@@ -117,40 +124,17 @@ for file_url in filelist:
         # if it's a 10-K document pull the url and the name.
         if document_dict['cik_number'] in snp:
             if document_dict['form_id'] == '10-K' or document_dict['form_id'] == 'NT 10-K':
-                # count += 1
                 # get the components
+                count += 1
                 comp_name = document_dict['company_name']
                 docu_url = document_dict['file_url']
 
-                # print('-'*100)
-                # print(comp_name)
-                # print(docu_url)
+                print('-'*100)
+                print(count, '. ', comp_name)
 
                 # Create a url that will take us to the archive folder
                 archive_url = docu_url.replace('.txt','/index.json').replace('-','')
-
-                # print('-'*100)
-                # print('     The Archive Folder can be found here: {}'.format(archive_url))
-
-                # normal_url = normal_url.replace('-','').replace('.txt','/index.json')
-
-
-                # # Create a url that takes us to the Detail filing landing page
-                # file_url_adj = docu_url.split('.txt')
-                # file_url_archive = file_url_adj[0] + '-index.htm'
-
-                # print('-'*100)
-                # print('     The Filing Detail can be found here: {}'.format(file_url_archive))
-
-
-
-                # # Create a url that will take us the Company filing Archive
-                # company_url =docu_url.rpartition('/')
-
-                # print('-'*100)
-                # print('     The Company Archive Folder can be found here: {}'.format(company_url[0]))
-
-# print("total count of companies is", count)
+                print(archive_url)                
 
 
                 base_url = r"https://www.sec.gov"
@@ -158,16 +142,13 @@ for file_url in filelist:
                 # request the url and decode it.
                 content = requests.get(archive_url).json()
 
+
                 for file in content['directory']['item']:
 
                     # Grab the filing summary and create a new url leading to the file so we can download it.
                     if file['name'] == 'FilingSummary.xml':
 
                         xml_summary = base_url + content['directory']['name'] + "/" + file['name']
-
-                        # print('-' * 100)
-                        # print('File Name: ' + file['name'])
-                        # print('File Path: ' + xml_summary)
 
                 # define a new base url that represents the filing folder. This will come in handy when we need to download the reports.
                 base_url = xml_summary.replace('FilingSummary.xml', '')
@@ -184,6 +165,8 @@ for file_url in filelist:
 
                 # I want a list to store all the individual components of the report, so create the master list.
                 master_reports = []
+                report_list = []
+                
 
                 # store where the balance sheet position
                 bs_location = 0
@@ -197,9 +180,9 @@ for file_url in filelist:
                     # let's create a dictionary to store all the different parts we need.
                     report_dict = {}
                     report_dict['name_short'] = report.shortname.text
-                    # report_dict['name_long'] = report.longname.text
-                    # report_dict['position'] = report.position.text
-                    # report_dict['category'] = report.menucategory.text
+                    report_dict['name_long'] = report.longname.text
+                    report_dict['position'] = report.position.text
+                    report_dict['category'] = report.menucategory.text
                     report_dict['url'] = base_url + report.htmlfilename.text
 
 
@@ -241,32 +224,28 @@ for file_url in filelist:
                     for i in range(1, len(cf_titles_list)):
                         cf_titles_list[i] = cf_titles_list[i].lower()
 
-                    
-                    # if report.shortname.text.lower() in bs_titles_list:
-                    #     bs_location = report.position.text
+
+                    if report.shortname.text.lower() in bs_titles_list:
+                        bs_location = report.position.text
+                        report_list.append(bs_location)
 
                     if report.shortname.text.lower() in is_titles_list:
                         is_location = report.position.text
+                        report_list.append(is_location)
                     # else if
                     if report.shortname.text.lower() in cis_titles_list:
                         cis_location =  report.position.text
+                        report_list.append(cis_location)
 
                     if report.shortname.text.lower() in cf_titles_list:
                         cf_location = report.position.text
+                        report_list.append(cf_location)
 
                     # append the dictionary to the master list.
                     master_reports.append(report_dict)
 
-                    # # print the info to the user.
-                    # print('-'*100)
-                    # print(base_url + report.htmlfilename.text)
-                    # print(report.longname.text)
-                    # print(report.shortname.text)
-                    # print(report.menucategory.text)
-                    # print(report.position.text)
-
-                # if bs_location == 0:
-                #     balanceSheetCount += 1
+                if bs_location == 0:
+                    balanceSheetCount += 1
                 #     print(document_dict['company_name'], master_reports, bs_location)
 
                 if is_location == 0:
@@ -279,32 +258,120 @@ for file_url in filelist:
 
                 if cf_location == 0:
                     CFCount += 1
-                    print(document_dict['company_name'], master_reports, cf_location)
+                    # print(document_dict['company_name'], master_reports, cf_location)
                 
                 # create the list to hold the statement urls
                 statements_url = []
 
                 for report_dict in master_reports:
 
-                # #     # if the short name can be found in the report list.
-                #     if report_dict['name_short'].lower() == 'consolidated balance sheets':
-                #fasfasdf
+                    if report_dict['position'] in report_list:
+                        print('-'*100)
+                        print('     ', report_dict['name_short'])
+                        print('     ', report_dict['url'])
+                        
+                        statements_url.append(report_dict['url'])
 
-                #         # print some info and store it in the statements url.
-                #         print('-'*100)
-                #         print(report_dict['name_short'])
-                #         print(report_dict['url'])
+                    # if report_dict['name_short'] not in unique_names:
+                    #      unique_names.append(report_dict['name_short'])
 
-                     #statements_url.append(report_dict['url'])
-                     if report_dict['name_short'] not in unique_names:
-                         unique_names.append(report_dict['name_short'])
+                # statements_data = []
 
-                # # print(unique_names)
+                # # loop through each statement url
+                # for statement in statements_url:
 
-print('number of balance sheets unacounted for is', balanceSheetCount)
-print('number of income statements unacounted for is', ISCount)
-print('number of comprehensive income statements unacounted for is', CISCount)
-print('number of cash flows unacounted for is', CFCount)
+                #     # define a dictionary that will store the different parts of the statement.
+                #     statement_data = {}
+                #     statement_data['headers'] = []
+                #     statement_data['sections'] = []
+                #     statement_data['data'] = []
+                    
+                #     # request the statement file content
+                #     content = requests.get(statement).content
+                #     report_soup = BeautifulSoup(content, 'html')
+
+                #     # find all the rows, figure out what type of row it is, parse the elements, and store in the statement file list.
+                #     for index, row in enumerate(report_soup.table.find_all('tr')):
+                        
+                #         # first let's get all the elements.
+                #         cols = row.find_all('td')
+                        
+                #         # if it's a regular row and not a section or a table header
+                #         if (len(row.find_all('th')) == 0 and len(row.find_all('strong')) == 0): 
+                #             reg_row = [ele.text.strip() for ele in cols]
+                #             statement_data['data'].append(reg_row)
+                            
+                #         # if it's a regular row and a section but not a table header
+                #         elif (len(row.find_all('th')) == 0 and len(row.find_all('strong')) != 0):
+                #             sec_row = cols[0].text.strip()
+                #             statement_data['sections'].append(sec_row)
+                            
+                #         # finally if it's not any of those it must be a header
+                #         elif (len(row.find_all('th')) != 0):            
+                #             hed_row = [ele.text.strip() for ele in row.find_all('th')]
+                #             statement_data['headers'].append(hed_row)
+                            
+                #         else:            
+                #             print('We encountered an error.')
+
+                #     # append it to the master list.
+                #     statements_data.append(statement_data)
+
+                #     # Grab the proper components
+                #     income_header =  statements_data[1]['headers'][1]
+                #     income_data = statements_data[1]['data']
+
+                #     # Put the data in a DataFrame
+                #     income_df = pd.DataFrame(income_data)
+
+                #     # Display
+                #     print('-'*100)
+                #     print('Before Reindexing')
+                #     print('-'*100)
+                #     print(income_df.head())
+
+                #     # Define the Index column, rename it, and we need to make sure to drop the old column once we reindex.
+                #     income_df.index = income_df[0]
+                #     income_df.index.name = 'Category'
+                #     income_df = income_df.drop(0, axis = 1)
+
+                #     # Display
+                #     print('-'*100)
+                #     print('Before Regex')
+                #     print('-'*100)
+                #     print(income_df.head())
+
+                #     # Get rid of the '$', '(', ')', and convert the '' to NaNs.
+                #     income_df = income_df.replace('[\$,)]','', regex=True )\
+                #                         .replace( '[(]','-', regex=True)\
+                #                         .replace( '', 'NaN', regex=True)
+
+                #     # Display
+                #     print('-'*100)
+                #     print('Before type conversion')
+                #     print('-'*100)
+                #     print(income_df.head())
+
+                #     # everything is a string, so let's convert all the data to a float.
+                #     income_df = income_df.astype(float)
+
+                #     # Change the column headers
+                #     income_df.columns = income_header
+
+                #     # Display
+                #     print('-'*100)
+                #     print('Final Product')
+                #     print('-'*100)
+
+                #     # show the df
+                #     print(income_df)
+
+                    # # print(unique_names)
+
+# print('number of balance sheets unacounted for is', balanceSheetCount)
+# print('number of income statements unacounted for is', ISCount)
+# print('number of comprehensive income statements unacounted for is', CISCount)
+# print('number of cash flows unacounted for is', CFCount)
 
 # count = 0
 # cis_titles = []
