@@ -263,6 +263,8 @@ for file_url in filelist:
                 # create the list to hold the statement urls
                 statements_url = []
 
+                # print out selected statements and display the urls that will be parsed
+                 
                 for report_dict in master_reports:
 
                     if report_dict['position'] in report_list:
@@ -272,102 +274,26 @@ for file_url in filelist:
                         
                         statements_url.append(report_dict['url'])
 
-                    # if report_dict['name_short'] not in unique_names:
-                    #      unique_names.append(report_dict['name_short'])
 
-                # statements_data = []
+                statements_data = []
 
-                # # loop through each statement url
-                # for statement in statements_url:
+                # loop through each statement url
+                for statement in statements_url:
 
-                #     # define a dictionary that will store the different parts of the statement.
-                #     statement_data = {}
-                #     statement_data['headers'] = []
-                #     statement_data['sections'] = []
-                #     statement_data['data'] = []
+                    # request the statement file content
+                    content = requests.get(statement).content
+                    report_soup = BeautifulSoup(content, 'lxml')
+
+                    # append the HTML table into the list
+                    statements_data.append(report_soup.table)
+
+
+                    # # define a dictionary that will store the different parts of the statement.
+                    # statement_data = {}
+                    # statement_data['headers'] = []
+                    # statement_data['sections'] = []
+                    # statement_data['data'] = []
                     
-                #     # request the statement file content
-                #     content = requests.get(statement).content
-                #     report_soup = BeautifulSoup(content, 'html')
-
-                #     # find all the rows, figure out what type of row it is, parse the elements, and store in the statement file list.
-                #     for index, row in enumerate(report_soup.table.find_all('tr')):
-                        
-                #         # first let's get all the elements.
-                #         cols = row.find_all('td')
-                        
-                #         # if it's a regular row and not a section or a table header
-                #         if (len(row.find_all('th')) == 0 and len(row.find_all('strong')) == 0): 
-                #             reg_row = [ele.text.strip() for ele in cols]
-                #             statement_data['data'].append(reg_row)
-                            
-                #         # if it's a regular row and a section but not a table header
-                #         elif (len(row.find_all('th')) == 0 and len(row.find_all('strong')) != 0):
-                #             sec_row = cols[0].text.strip()
-                #             statement_data['sections'].append(sec_row)
-                            
-                #         # finally if it's not any of those it must be a header
-                #         elif (len(row.find_all('th')) != 0):            
-                #             hed_row = [ele.text.strip() for ele in row.find_all('th')]
-                #             statement_data['headers'].append(hed_row)
-                            
-                #         else:            
-                #             print('We encountered an error.')
-
-                #     # append it to the master list.
-                #     statements_data.append(statement_data)
-
-                #     # Grab the proper components
-                #     income_header =  statements_data[1]['headers'][1]
-                #     income_data = statements_data[1]['data']
-
-                #     # Put the data in a DataFrame
-                #     income_df = pd.DataFrame(income_data)
-
-                #     # Display
-                #     print('-'*100)
-                #     print('Before Reindexing')
-                #     print('-'*100)
-                #     print(income_df.head())
-
-                #     # Define the Index column, rename it, and we need to make sure to drop the old column once we reindex.
-                #     income_df.index = income_df[0]
-                #     income_df.index.name = 'Category'
-                #     income_df = income_df.drop(0, axis = 1)
-
-                #     # Display
-                #     print('-'*100)
-                #     print('Before Regex')
-                #     print('-'*100)
-                #     print(income_df.head())
-
-                #     # Get rid of the '$', '(', ')', and convert the '' to NaNs.
-                #     income_df = income_df.replace('[\$,)]','', regex=True )\
-                #                         .replace( '[(]','-', regex=True)\
-                #                         .replace( '', 'NaN', regex=True)
-
-                #     # Display
-                #     print('-'*100)
-                #     print('Before type conversion')
-                #     print('-'*100)
-                #     print(income_df.head())
-
-                #     # everything is a string, so let's convert all the data to a float.
-                #     income_df = income_df.astype(float)
-
-                #     # Change the column headers
-                #     income_df.columns = income_header
-
-                #     # Display
-                #     print('-'*100)
-                #     print('Final Product')
-                #     print('-'*100)
-
-                #     # show the df
-                #     print(income_df)
-
-                    # # print(unique_names)
-
 # print('number of balance sheets unacounted for is', balanceSheetCount)
 # print('number of income statements unacounted for is', ISCount)
 # print('number of comprehensive income statements unacounted for is', CISCount)
